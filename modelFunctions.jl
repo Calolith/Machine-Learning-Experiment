@@ -22,9 +22,10 @@ function predict(param, questions, qstory, story, vocabSize, qBounds, memorySize
 				if enableSoftmax
 					p = softmax(transpose(u) * MA, 2)
 				else
-					p = MA
+					p = transpose(u) * MA
 				end
-				o = sum(p .* MC, 2)
+				#o = sum(p .* MC, 2)
+				o = MC * transpose(p)
 				if addLinearLayer
 					u = o + param["H"] * u
 				else
@@ -52,9 +53,10 @@ function predict(param, questions, qstory, story, vocabSize, qBounds, memorySize
 				if enableSoftmax
 					p = softmax(transpose(u) * MA, 2)
 				else
-					p = MA
+					p = transpose(u) * MA
 				end
-				o = sum(p .* MC, 2)
+				#o = sum(p .* MC, 2)
+				o = sum(MC * transpose(p), 2)
 				if addLinearLayer
 					u = o + param["H"] * u
 				else
@@ -69,7 +71,7 @@ function predict(param, questions, qstory, story, vocabSize, qBounds, memorySize
 end
 
 function softmax(matrix, side)
-	x = exp(matrix - maximum(matrix))
+	x = exp(matrix - maximum(matrix) + 1)
 	return x ./ sum(x, side)
 end
 

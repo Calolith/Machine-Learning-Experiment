@@ -10,14 +10,14 @@ using Knet, AutoGrad, ParseBabi, ModelFunctions
 	nEpochs = 100
 	lrDecayStep = 25
 	lrDecayAmount = 0.5
-	lr = 0.01
+	lr = 0.005
 	gradClip = 40
 	d = 20
 
 	timeEmbedding = true
 	isBagOfWords = false
 	weightAdjacent = true
-	linearStart = false
+	linearStart = true
 	addNonLinearity = false
 	addLinearLayer = false
 	amountOfNoise = 0.0 #TODO
@@ -27,7 +27,7 @@ using Knet, AutoGrad, ParseBabi, ModelFunctions
 function main()
 	global lr
 	baseDir = "data/tasksv11/en/"
-	taskID = 1
+	taskID = 16
 
 	# vocab = Dictionary( String -> Integer )
 	vocab = createVocab(baseDir, taskID)
@@ -52,7 +52,6 @@ function main()
 
 	print("Report @time: ")
 	lossPer, acc = @time report(param, questions, qstory, story, vocabSize, memorySize, enableSoftmax, trainQs)
-	oldLossPer = lossPer
 	print("ReportVal @time: ")
 	lossPerVal, accVal = @time report(param, questions, qstory, story, vocabSize, memorySize, enableSoftmax, validationQs)
 	oldLossPerVal = lossPerVal
@@ -60,9 +59,9 @@ function main()
 	println("Training Loss: ", lossPer, " Training Accuracy: ", acc)
 	println("Validation Loss: ", lossPerVal, " Validation Accuracy: ", accVal, "\n")
 	for epoch in 1:nEpochs
-#		if epoch % lrDecayStep == 0
-#			lr *= lrDecayAmount
-#		end
+		if epoch % lrDecayStep == 0
+			lr *= lrDecayAmount
+		end
 		print("Train @time: ")
 		@time train(param, questions, qstory, story, vocabSize, memorySize, enableSoftmax, trainQs)
 		print("Report @time: ")
@@ -77,13 +76,7 @@ function main()
 		end
 
 		reportTest(storyTest, qstoryTest, questionsTest, param, vocabSize, memorySize, enableSoftmax)
-		if lossPer > oldLossPer
-			lr *= lrDecayAmount
-		end
-		oldLossPer = lossPer
 		oldLossPerVal = lossPerVal
-
-		##################
 	end
 end
 
